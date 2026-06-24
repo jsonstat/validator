@@ -14,6 +14,6 @@ pub mod types;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
+pub use manifest::manifest;
 pub use pipeline::{validate, validate_from_str};
 pub use types::{Finding, Severity, ValidateOptions, ValidationResult};
-pub use manifest::manifest;

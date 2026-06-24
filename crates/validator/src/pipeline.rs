@@ -52,7 +52,14 @@ pub fn validate(doc: &Value, options: &ValidateOptions) -> ValidationResult {
         if cls == Some("dataset") || looks_like_bundle(doc) {
             run_on_node(doc, "", options, &mf, &mut findings);
         } else if cls == Some("collection") {
-            run_collection(doc, "", options, &mf, &mut findings, ro.max_collection_depth);
+            run_collection(
+                doc,
+                "",
+                options,
+                &mf,
+                &mut findings,
+                ro.max_collection_depth,
+            );
         }
         // dimension-class responses: structural covers shape; no size context for semantic
     }
@@ -61,7 +68,10 @@ pub fn validate(doc: &Value, options: &ValidateOptions) -> ValidationResult {
 }
 
 fn looks_like_bundle(doc: &Value) -> bool {
-    if matches!(doc["class"].as_str(), Some("dataset") | Some("collection") | Some("dimension")) {
+    if matches!(
+        doc["class"].as_str(),
+        Some("dataset") | Some("collection") | Some("dimension")
+    ) {
         return false;
     }
     if let Some(o) = doc.as_object() {
@@ -77,7 +87,13 @@ fn looks_like_bundle(doc: &Value) -> bool {
     false
 }
 
-fn run_on_node(doc: &Value, root: &str, opts: &ValidateOptions, mf: &ManifestData, out: &mut Vec<Finding>) {
+fn run_on_node(
+    doc: &Value,
+    root: &str,
+    opts: &ValidateOptions,
+    mf: &ManifestData,
+    out: &mut Vec<Finding>,
+) {
     let analyzed = analyze_dataset(doc, MAX_CELLS);
     if analyzed.overflow {
         let r = lookup(mf, "OVF");
@@ -143,7 +159,11 @@ fn run_collection(
     }
 }
 
-fn finalize(all: Vec<Finding>, options: &ValidateOptions, start: std::time::Instant) -> ValidationResult {
+fn finalize(
+    all: Vec<Finding>,
+    options: &ValidateOptions,
+    start: std::time::Instant,
+) -> ValidationResult {
     let mf = manifest();
     let ro = resolve_options(options);
     let valid = all.iter().all(|f| f.severity != Severity::Error);
@@ -179,5 +199,11 @@ fn finalize(all: Vec<Finding>, options: &ValidateOptions, start: std::time::Inst
         duration_ms: start.elapsed().as_millis(),
     };
 
-    ValidationResult { valid, findings: filtered, summary, options: ro, meta }
+    ValidationResult {
+        valid,
+        findings: filtered,
+        summary,
+        options: ro,
+        meta,
+    }
 }

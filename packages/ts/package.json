@@ -20,9 +20,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "node --loader ./tools/ts-loader.mjs --test \"test/**/*.test.ts\"",
-    "test:rules": "node --loader ./tools/ts-loader.mjs --test \"test/rules.test.ts\"",
-    "test:corpus": "node --loader ./tools/ts-loader.mjs --test \"test/corpus.test.ts\""
+    "test": "node --loader ./tools/ts-loader.mjs --test test/rules.test.ts test/corpus.test.ts",
+    "test:rules": "node --loader ./tools/ts-loader.mjs --test test/rules.test.ts",
+    "test:corpus": "node --loader ./tools/ts-loader.mjs --test test/corpus.test.ts"
   },
   "dependencies": {
     "ajv": "^8.17.1",

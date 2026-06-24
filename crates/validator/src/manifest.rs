@@ -4,7 +4,8 @@ pub use crate::types::{ManifestData, ManifestRule};
 pub const MANIFEST_JSON: &str = include_str!("../../../rules-manifest.json");
 
 pub fn manifest() -> ManifestData {
-    serde_json::from_str(MANIFEST_JSON).expect("rules-manifest.json must be valid JSON matching ManifestData")
+    serde_json::from_str(MANIFEST_JSON)
+        .expect("rules-manifest.json must be valid JSON matching ManifestData")
 }
 
 pub fn lookup<'a>(mf: &'a ManifestData, id: &str) -> &'a ManifestRule {

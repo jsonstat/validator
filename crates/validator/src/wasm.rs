@@ -10,8 +10,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub fn validate_json(doc: JsValue, options: JsValue) -> JsValue {
     let docv: Value = serde_wasm_bindgen::from_value(doc).unwrap_or(Value::Null);
-    let opts: ValidateOptions =
-        serde_wasm_bindgen::from_value(options).unwrap_or_default();
+    let opts: ValidateOptions = serde_wasm_bindgen::from_value(options).unwrap_or_default();
     let res = validate(&docv, &opts);
     serde_wasm_bindgen::to_value(&res).unwrap_or(JsValue::NULL)
 }

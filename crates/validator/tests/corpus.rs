@@ -37,7 +37,11 @@ fn corpus_parity() {
 
         if c.group == "valid" {
             if !res.valid {
-                failures.push(format!("{}: expected valid, got [{}]", c.id, codes.join(", ")));
+                failures.push(format!(
+                    "{}: expected valid, got [{}]",
+                    c.id,
+                    codes.join(", ")
+                ));
             }
             for f in &res.findings {
                 if f.severity == Severity::Error {
@@ -48,7 +52,12 @@ fn corpus_parity() {
             let exp = c.expected.codes.clone().unwrap_or_default();
             for code in &exp {
                 if !codes.contains(code) {
-                    failures.push(format!("{}: expected code {} in [{}]", c.id, code, codes.join(",")));
+                    failures.push(format!(
+                        "{}: expected code {} in [{}]",
+                        c.id,
+                        code,
+                        codes.join(",")
+                    ));
                 }
             }
             if c.expected.no_other_errors.unwrap_or(true) {

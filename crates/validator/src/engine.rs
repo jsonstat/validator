@@ -14,11 +14,15 @@ pub struct Analyzed {
 
 /// Compute id/size arrays, the valid id set, and the safe (overflow-checked) product(size).
 pub fn analyze_dataset(doc: &Value, max_cells: u64) -> Analyzed {
-    let id_arr = doc["id"]
-        .as_array()
-        .map(|a| a.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect::<Vec<_>>());
+    let id_arr = doc["id"].as_array().map(|a| {
+        a.iter()
+            .filter_map(|v| v.as_str().map(|s| s.to_string()))
+            .collect::<Vec<_>>()
+    });
 
-    let id_set = id_arr.as_ref().map(|v| v.iter().cloned().collect::<HashSet<_>>());
+    let id_set = id_arr
+        .as_ref()
+        .map(|v| v.iter().cloned().collect::<HashSet<_>>());
 
     let size_arr = doc["size"].as_array().and_then(|a| {
         let mut out = Vec::with_capacity(a.len());
@@ -53,7 +57,13 @@ pub fn analyze_dataset(doc: &Value, max_cells: u64) -> Analyzed {
         }
     }
 
-    Analyzed { id_arr, size_arr, id_set, product, overflow }
+    Analyzed {
+        id_arr,
+        size_arr,
+        id_set,
+        product,
+        overflow,
+    }
 }
 
 pub struct Ctx<'a> {
@@ -73,7 +83,13 @@ pub fn run_semantic(
     analyzed: &Analyzed,
     out: &mut Vec<Finding>,
 ) {
-    let ctx = Ctx { doc, root, opts, mf, analyzed };
+    let ctx = Ctx {
+        doc,
+        root,
+        opts,
+        mf,
+        analyzed,
+    };
     rules::dataset_rules(&ctx, out);
     rules::dimension_rules(&ctx, out);
 }

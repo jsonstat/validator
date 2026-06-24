@@ -43,7 +43,11 @@ pub fn validate_structural(doc: &Value, mf: &ManifestData) -> Vec<Finding> {
         Err(errs) => errs
             .map(|e| {
                 let raw = e.instance_path.to_string();
-                let path = if raw.is_empty() { "/".to_string() } else { format!("/{raw}") };
+                let path = if raw.is_empty() {
+                    "/".to_string()
+                } else {
+                    format!("/{raw}")
+                };
                 Finding {
                     code: r.code.clone(),
                     rule_id: r.id.clone(),
