@@ -1,0 +1,35 @@
+{
+  "name": "@jsonstat-validator/ts",
+  "version": "0.1.0",
+  "description": "Semantic validator for JSON-stat 2.0 — layers cross-field cube invariants on top of the official JSON Schema 2020-12 definitions.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "../../rules-manifest.json",
+    "../../schemas/vendored"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --loader ./tools/ts-loader.mjs --test \"test/**/*.test.ts\"",
+    "test:rules": "node --loader ./tools/ts-loader.mjs --test \"test/rules.test.ts\"",
+    "test:corpus": "node --loader ./tools/ts-loader.mjs --test \"test/corpus.test.ts\""
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

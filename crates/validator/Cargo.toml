@@ -1,0 +1,30 @@
+[package]
+name = "jsonstat-validator"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Semantic validator for JSON-stat 2.0 — cross-field cube invariants on top of the official JSON Schema 2020-12 definitions."
+repository = "https://github.com/jsonstat/validator"
+
+[lib]
+name = "jsonstat_validator"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# default-features = false: the schemas are fully self-contained (no external $ref), so we don't
+# need jsonschema's HTTP/file retrievers (which are not wasm-compatible).
+jsonschema = { version = "0.22", default-features = false }
+wasm-bindgen = { version = "0.2", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+
+[features]
+default = []
+# Enable to build the WebAssembly surface (crates/validator/src/wasm.rs).
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen"]
+
+# On wasm32, enable getrandom's wasm_js backend (required by a transitive dependency in the
+# jsonschema tree). Build with: RUSTFLAGS='--cfg getrandom_backend="wasm_js"'.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

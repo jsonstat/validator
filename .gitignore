@@ -1,0 +1,11 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+
+# OS / editors
+.DS_Store

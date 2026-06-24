@@ -1,0 +1,31 @@
+{
+  "engineVersion": "0.1.0",
+  "ruleSetVersion": "1.0.0",
+  "schemaVersion": "1.05",
+  "description": "Single source of truth for the jsonstat-validator rule catalogue, error codes, severities and message hints. Loaded verbatim by the TypeScript surface (fs) and the Rust surface (include_str!). Codes are append-only within a ruleSetVersion major.",
+  "rules": [
+    { "id": "S1",  "code": "ID_SIZE_LEN_MISMATCH",   "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/dataset-structure.md",    "message": "The number of dimension ids must equal the number of sizes." },
+    { "id": "S2",  "code": "DIM_KEY_ID_MISMATCH",    "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/dataset-structure.md",    "message": "The keys of 'dimension' must equal the values of 'id'." },
+    { "id": "S3",  "code": "VALUE_LEN_MISMATCH",     "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/format-specification.md", "message": "Dense 'value' length must equal product(size)." },
+    { "id": "S4",  "code": "SPARSE_KEY_OUT_OF_RANGE","severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/sparse-cubes.md",         "message": "Sparse 'value' keys must be integers in [0, product(size)-1]." },
+    { "id": "S5",  "code": "ROLE_ID_UNKNOWN",        "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/dimensions.md",           "message": "role.{time,geo,metric} entries must reference dimension ids." },
+    { "id": "S6",  "code": "STATUS_LEN_MISMATCH",    "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/dataset-structure.md",    "message": "Array 'status' length must equal product(size)." },
+    { "id": "S7",  "code": "STATUS_KEY_OUT_OF_RANGE","severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/dataset-structure.md",    "message": "Object 'status' keys must be valid cell positions in [0, product(size)-1]." },
+    { "id": "S8",  "code": "METRIC_UNIT_MISSING",    "severity": "warning", "appliesTo": "dataset",    "specRef": "wiki/dimensions.md",           "message": "Metric-role dimensions should provide a non-empty category.unit." },
+    { "id": "D1",  "code": "INDEX_COUNT_MISMATCH",   "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "Array category.index count must equal the dimension size." },
+    { "id": "D2",  "code": "INDEX_POSITIONS_INVALID","severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "Object category.index values must be a permutation of [0, size-1]." },
+    { "id": "D3a", "code": "LABEL_KEY_UNKNOWN",      "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.label keys must reference index ids." },
+    { "id": "D3b", "code": "LABEL_KEY_INCOMPLETE",   "severity": "warning", "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.label does not cover all index ids." },
+    { "id": "D4",  "code": "UNIT_KEY_UNKNOWN",       "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.unit keys must reference index ids." },
+    { "id": "D5",  "code": "COORD_KEY_UNKNOWN",      "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.coordinates keys must reference index ids." },
+    { "id": "D6",  "code": "NOTE_KEY_UNKNOWN",       "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.note keys must reference index ids." },
+    { "id": "D7a", "code": "CHILD_ID_UNKNOWN",       "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.child ids must reference index ids." },
+    { "id": "D7b", "code": "CHILD_CYCLE",            "severity": "error",   "appliesTo": "dimension",  "specRef": "wiki/dimensions.md",           "message": "category.child hierarchy must be acyclic." },
+    { "id": "C1",  "code": "RECURSION_LIMIT",        "severity": "info",    "appliesTo": "collection", "specRef": "wiki/links.md",                "message": "Collection recursion depth exceeded the configured budget." },
+    { "id": "C2",  "code": "BUNDLE_DEPRECATED",      "severity": "info",    "appliesTo": "dataset",    "specRef": "wiki/response-classes.md",     "message": "Pre-2.0 bundle response detected (deprecated; use collection)." },
+    { "id": "OVF", "code": "CUBE_SIZE_OVERFLOW",     "severity": "error",   "appliesTo": "dataset",    "specRef": "wiki/format-specification.md", "message": "product(size) overflows the engine's cell budget." },
+    { "id": "PARSE","code": "PARSE_ERROR",           "severity": "error",   "appliesTo": "any",        "specRef": "",                             "message": "Input is not valid JSON." },
+    { "id": "STRUCT","code": "STRUCTURAL_VIOLATION", "severity": "error",   "appliesTo": "any",        "specRef": "wiki/schema.md",               "message": "Document violates the JSON-stat 2.0 JSON Schema (keyword retained in meta)." },
+    { "id": "BUDGET","code": "BUDGET_EXCEEDED",      "severity": "warning", "appliesTo": "any",        "specRef": "",                             "message": "Validation budget exceeded; some checks were skipped." }
+  ]
+}

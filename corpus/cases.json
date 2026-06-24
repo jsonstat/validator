@@ -1,0 +1,110 @@
+[
+  { "id": "valid/minimal-dataset", "group": "valid", "expected": { "valid": true }, "input": {
+    "version": "2.0", "class": "dataset", "label": "minimal valid dataset",
+    "id": ["sex", "year"], "size": [2, 2],
+    "dimension": {
+      "sex":  { "label": "sex",  "category": { "index": ["M", "F"], "label": { "M": "male", "F": "female" } } },
+      "year": { "label": "year", "category": { "index": ["2020", "2021"] } }
+    },
+    "value": [1, 2, 3, 4]
+  } },
+  { "id": "valid/sparse-dataset", "group": "valid", "expected": { "valid": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["x"], "size": [4],
+    "dimension": { "x": { "category": { "index": ["a", "b", "c", "d"] } } },
+    "value": { "0": 1.0, "3": 4.0 }
+  } },
+  { "id": "valid/collection-embedded", "group": "valid", "expected": { "valid": true }, "input": {
+    "version": "2.0", "class": "collection", "label": "embedded collection",
+    "link": { "item": [
+      { "class": "dataset", "href": "https://example.com/a.json", "label": "a",
+        "id": ["x"], "size": [1],
+        "dimension": { "x": { "category": { "index": ["a"] } } },
+        "value": [42] }
+    ] }
+  } },
+  { "id": "valid/hierarchy", "group": "valid", "expected": { "valid": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["geo"], "size": [3],
+    "dimension": { "geo": { "category": { "index": ["W", "EU", "DE"], "child": { "W": ["EU"], "EU": ["DE"] } } } },
+    "value": [1, 2, 3]
+  } },
+
+  { "id": "invalid/value-len-mismatch", "group": "invalid", "expected": { "codes": ["VALUE_LEN_MISMATCH"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year"], "size": [2, 2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "year": { "category": { "index": ["2020", "2021"] } } },
+    "value": [1, 2, 3]
+  } },
+  { "id": "invalid/id-size-len-mismatch", "group": "invalid", "expected": { "codes": ["ID_SIZE_LEN_MISMATCH"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year", "extra"], "size": [2, 2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "year": { "category": { "index": ["2020", "2021"] } }, "extra": { "category": { "index": ["e1", "e2"] } } },
+    "value": [1, 2, 3, 4]
+  } },
+  { "id": "invalid/dim-key-id-mismatch", "group": "invalid", "expected": { "codes": ["DIM_KEY_ID_MISMATCH"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year"], "size": [2, 2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "geo": { "category": { "index": ["A", "B"] } } },
+    "value": [1, 2, 3, 4]
+  } },
+  { "id": "invalid/sparse-key-out-of-range", "group": "invalid", "expected": { "codes": ["SPARSE_KEY_OUT_OF_RANGE"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["x"], "size": [4],
+    "dimension": { "x": { "category": { "index": ["a", "b", "c", "d"] } } },
+    "value": { "0": 1, "5": 2 }
+  } },
+  { "id": "invalid/role-id-unknown", "group": "invalid", "expected": { "codes": ["ROLE_ID_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year"], "size": [2, 2], "role": { "time": ["nope"] },
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "year": { "category": { "index": ["2020", "2021"] } } },
+    "value": [1, 2, 3, 4]
+  } },
+  { "id": "invalid/status-len-mismatch", "group": "invalid", "expected": { "codes": ["STATUS_LEN_MISMATCH"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year"], "size": [2, 2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "year": { "category": { "index": ["2020", "2021"] } } },
+    "value": [1, 2, 3, 4], "status": ["a", "b", "c"]
+  } },
+  { "id": "invalid/index-count-mismatch", "group": "invalid", "expected": { "codes": ["INDEX_COUNT_MISMATCH"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex", "year"], "size": [3, 2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"] } }, "year": { "category": { "index": ["2020", "2021"] } } },
+    "value": [1, 2, 3, 4, 5, 6]
+  } },
+  { "id": "invalid/index-positions-invalid", "group": "invalid", "expected": { "codes": ["INDEX_POSITIONS_INVALID"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex"], "size": [2],
+    "dimension": { "sex": { "category": { "index": { "M": 0, "F": 2 } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/label-key-unknown", "group": "invalid", "expected": { "codes": ["LABEL_KEY_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex"], "size": [2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"], "label": { "M": "male", "X": "x" } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/unit-key-unknown", "group": "invalid", "expected": { "codes": ["UNIT_KEY_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["metric"], "size": [2], "role": { "metric": ["metric"] },
+    "dimension": { "metric": { "category": { "index": ["A", "B"], "unit": { "Q": { "decimals": 1 } } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/coord-key-unknown", "group": "invalid", "expected": { "codes": ["COORD_KEY_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["geo"], "size": [2], "role": { "geo": ["geo"] },
+    "dimension": { "geo": { "category": { "index": ["A", "B"], "coordinates": { "Z": [1, 2] } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/note-key-unknown", "group": "invalid", "expected": { "codes": ["NOTE_KEY_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["sex"], "size": [2],
+    "dimension": { "sex": { "category": { "index": ["M", "F"], "note": { "W": ["x"] } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/child-id-unknown", "group": "invalid", "expected": { "codes": ["CHILD_ID_UNKNOWN"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["geo"], "size": [3],
+    "dimension": { "geo": { "category": { "index": ["A", "B", "C"], "child": { "A": ["XX"] } } } },
+    "value": [1, 2, 3]
+  } },
+  { "id": "invalid/child-cycle", "group": "invalid", "expected": { "codes": ["CHILD_CYCLE"], "valid": false, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["geo"], "size": [2],
+    "dimension": { "geo": { "category": { "index": ["A", "B"], "child": { "A": ["B"], "B": ["A"] } } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/metric-unit-missing", "group": "invalid", "expected": { "codes": ["METRIC_UNIT_MISSING"], "valid": true, "noOtherErrors": true }, "input": {
+    "version": "2.0", "class": "dataset", "id": ["metric"], "size": [2], "role": { "metric": ["metric"] },
+    "dimension": { "metric": { "category": { "index": ["A", "B"] } } },
+    "value": [1, 2]
+  } },
+  { "id": "invalid/bundle-deprecated", "group": "invalid", "expected": { "codes": ["BUNDLE_DEPRECATED"], "noOtherErrors": false }, "input": {
+    "version": "2.0",
+    "unemployment": { "class": "dataset", "label": "u", "id": ["x"], "size": [1], "dimension": { "x": { "category": { "index": ["a"] } } }, "value": [1] }
+  } }
+]

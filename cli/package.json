@@ -1,0 +1,13 @@
+{
+  "name": "jsonstat-validate",
+  "version": "0.1.0",
+  "description": "CLI for the jsonstat-validator semantic validator (JSON-stat 2.0).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "jsonstat-validate": "src/cli.ts"
+  },
+  "scripts": {
+    "validate": "node --experimental-strip-types src/cli.ts"
+  }
+}
