@@ -3,26 +3,64 @@
   "version": "0.1.0",
   "description": "Semantic validator for JSON-stat 2.0 — layers cross-field cube invariants on top of the official JSON Schema 2020-12 definitions.",
   "license": "Apache-2.0",
+  "author": "JSON-stat contributors",
+  "homepage": "https://github.com/jsonstat/validator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsonstat/validator.git",
+    "directory": "packages/ts"
+  },
+  "bugs": {
+    "url": "https://github.com/jsonstat/validator/issues"
+  },
+  "keywords": [
+    "json-stat",
+    "jsonstat",
+    "validator",
+    "validation",
+    "json-schema",
+    "statistics",
+    "opendata",
+    "semantic"
+  ],
   "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "browser": "dist/browser/jsonstat-validator.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "browser": "./dist/browser/jsonstat-validator.mjs",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser/jsonstat-validator.mjs",
+      "default": "./dist/browser/jsonstat-validator.mjs"
     }
   },
   "files": [
     "dist",
-    "../../rules-manifest.json",
-    "../../schemas/vendored"
+    "tools",
+    "src",
+    "LICENSE"
   ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc",
+    "gen": "node tools/gen-assets.mjs",
+    "sync-license": "node tools/sync-license.mjs",
+    "build": "npm run sync-license && npm run gen && tsc && node tools/build-node-cjs.mjs && node tools/build-browser.mjs",
+    "build:types": "npm run gen && tsc",
     "test": "node --loader ./tools/ts-loader.mjs --test test/rules.test.ts test/corpus.test.ts",
     "test:rules": "node --loader ./tools/ts-loader.mjs --test test/rules.test.ts",
-    "test:corpus": "node --loader ./tools/ts-loader.mjs --test test/corpus.test.ts"
+    "test:corpus": "node --loader ./tools/ts-loader.mjs --test test/corpus.test.ts",
+    "prepublishOnly": "npm run sync-license && npm run build"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -30,6 +68,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0",
     "typescript": "^5.7.2"
   }
 }

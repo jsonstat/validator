@@ -1,0 +1,21 @@
+{
+  "name": "jsonstat-validator-monorepo",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Monorepo for the jsonstat-validator semantic validator (JSON-stat 2.0).",
+  "workspaces": [
+    "packages/ts",
+    "cli"
+  ],
+  "scripts": {
+    "gen": "npm run gen -w @jsonstat-validator/ts",
+    "build": "npm run build -w @jsonstat-validator/ts && npm run build -w jsonstat-validate",
+    "test": "npm run test -w @jsonstat-validator/ts",
+    "test:rust": "cargo test --manifest-path crates/validator/Cargo.toml",
+    "pack:ts": "npm run build -w @jsonstat-validator/ts && npm pack -w @jsonstat-validator/ts --dry-run",
+    "pack:cli": "npm run build -w jsonstat-validate && npm pack -w jsonstat-validate --dry-run"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

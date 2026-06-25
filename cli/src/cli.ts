@@ -4,7 +4,7 @@
 //                            [--format json|text] [--min-severity error|warning|info]
 // Exit code 0 when valid, 1 when invalid.
 import { readFileSync } from "node:fs";
-import { validate, type ValidateOptions, type ValidationResult } from "../../packages/ts/src/index.js";
+import { validate, type ValidateOptions, type ValidationResult } from "@jsonstat-validator/ts";
 
 interface CliOpts {
   mode: ValidateOptions["mode"];

@@ -1,13 +1,43 @@
 {
   "name": "jsonstat-validate",
   "version": "0.1.0",
-  "description": "CLI for the jsonstat-validator semantic validator (JSON-stat 2.0).",
+  "description": "Command-line semantic validator for JSON-stat 2.0.",
   "license": "Apache-2.0",
+  "author": "JSON-stat contributors",
+  "homepage": "https://github.com/jsonstat/validator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsonstat/validator.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/jsonstat/validator/issues"
+  },
+  "keywords": [
+    "json-stat",
+    "jsonstat",
+    "validator",
+    "cli",
+    "command-line",
+    "validation",
+    "statistics",
+    "opendata"
+  ],
   "type": "module",
   "bin": {
-    "jsonstat-validate": "src/cli.ts"
+    "jsonstat-validate": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "validate": "node --experimental-strip-types src/cli.ts"
+    "sync-license": "node tools/sync-license.mjs",
+    "build": "npm run sync-license && node tools/build.mjs",
+    "dev": "node --experimental-strip-types src/cli.ts",
+    "prepublishOnly": "npm run build"
   }
 }
