@@ -252,10 +252,13 @@ S/D/C rule table.
 The repo is an npm workspace plus a Cargo crate. From a checkout:
 
 ```bash
-# TypeScript: generate bundled assets (manifest + schemas) → build → test
+# TypeScript: npm install runs the `prepare` hook, which auto-builds both
+# workspaces (so `npx jsonstat-validate` works immediately) and re-links the bin.
 npm install
-npm run build            # builds @jsonstat-validator/ts and jsonstat-validate
 npm test                 # 27/27 corpus + rule tests
+
+# After editing TS/CLI sources, rebuild:
+npm run build            # regenerates @jsonstat-validator/ts and jsonstat-validate
 
 # Rust:
 cargo test --manifest-path crates/validator/Cargo.toml

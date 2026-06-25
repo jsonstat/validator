@@ -13,7 +13,8 @@
     "test": "npm run test -w @jsonstat-validator/ts",
     "test:rust": "cargo test --manifest-path crates/validator/Cargo.toml",
     "pack:ts": "npm run build -w @jsonstat-validator/ts && npm pack -w @jsonstat-validator/ts --dry-run",
-    "pack:cli": "npm run build -w jsonstat-validate && npm pack -w jsonstat-validate --dry-run"
+    "pack:cli": "npm run build -w jsonstat-validate && npm pack -w jsonstat-validate --dry-run",
+    "prepare": "node tools/prepare.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
