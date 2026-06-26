@@ -93,7 +93,7 @@ const result = await validateFile("./my-cube.json");
   ],
   "summary": { "errors": 1, "warnings": 0, "infos": 0, "structuralErrors": 0, "byCode": { "VALUE_LEN_MISMATCH": 1 } },
   "options": { /* resolved ValidateOptions */ },
-  "meta": { "engineVersion": "0.1.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
+  "meta": { "engineVersion": "0.1.1", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
 }
 ```
 
@@ -293,4 +293,4 @@ published tarball carries everything it needs. The Rust crate does the equivalen
 
 ## License
 
-Apache-2.0, matching the rest of the JSON-stat ecosystem.
+Apache-2.0.

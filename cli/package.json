@@ -1,6 +1,6 @@
 {
   "name": "jsonstat-validate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command-line semantic validator for JSON-stat 2.0.",
   "license": "Apache-2.0",
   "author": "JSON-stat contributors",
