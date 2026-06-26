@@ -9,10 +9,13 @@ use crate::types::{Finding, Severity};
 use jsonschema::validator_for;
 use serde_json::Value;
 
-const DATASET_SCHEMA: &str = include_str!("../../../schemas/vendored/dataset.json");
-const COLLECTION_SCHEMA: &str = include_str!("../../../schemas/vendored/collection.json");
-const DIMENSION_SCHEMA: &str = include_str!("../../../schemas/vendored/dimension.json");
-const INDEX_SCHEMA: &str = include_str!("../../../schemas/vendored/index.json");
+// Embedded from the copies synced into src/_vendored/schemas/ by build.rs, which mirrors the
+// monorepo-root ../../schemas/vendored/*.json. Using local copies keeps the crate self-contained for
+// `cargo publish` (which only packs files inside the package directory).
+const DATASET_SCHEMA: &str = include_str!("_vendored/schemas/dataset.json");
+const COLLECTION_SCHEMA: &str = include_str!("_vendored/schemas/collection.json");
+const DIMENSION_SCHEMA: &str = include_str!("_vendored/schemas/dimension.json");
+const INDEX_SCHEMA: &str = include_str!("_vendored/schemas/index.json");
 
 fn pick_schema_str(doc: &Value) -> &'static str {
     match doc["class"].as_str() {
