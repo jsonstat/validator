@@ -25,7 +25,10 @@ const ASSETS: &[(&str, &str)] = &[
     // (source relative to repo root, destination relative to crate src/_vendored/)
     ("rules-manifest.json", "manifest/rules-manifest.json"),
     ("schemas/vendored/dataset.json", "schemas/dataset.json"),
-    ("schemas/vendored/collection.json", "schemas/collection.json"),
+    (
+        "schemas/vendored/collection.json",
+        "schemas/collection.json",
+    ),
     ("schemas/vendored/dimension.json", "schemas/dimension.json"),
     ("schemas/vendored/index.json", "schemas/index.json"),
 ];
@@ -52,10 +55,7 @@ fn main() {
     }
 
     // LOCAL dev mode: repo root reachable → sync from the single sources of truth.
-    println!(
-        "cargo:rerun-if-changed={}",
-        source_marker.display()
-    );
+    println!("cargo:rerun-if-changed={}", source_marker.display());
     for entry in fs::read_dir(repo_root.join("schemas").join("vendored"))
         .expect("build.rs: could not read schemas/vendored")
     {
