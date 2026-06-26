@@ -288,6 +288,13 @@ published tarball carries everything it needs. The Rust crate does the equivalen
   `RUSTFLAGS='--cfg getrandom_backend="wasm_js"'`); JS wrapper + cross-validation still pending.
 - **M5** ⏳ npm + crates.io publish, `curated/` de-duplicated schemas (with curated≡vendored parity
   test), full CI/release.
+- **Follow-up** ⏳ Rust crate `_vendored` parity test — assert the committed
+  [`crates/validator/src/_vendored/`](crates/validator/src/_vendored) snapshot stays byte-identical
+  to the repo-root sources ([`rules-manifest.json`](rules-manifest.json),
+  [`schemas/vendored/*.json`](schemas/vendored)). `build.rs` re-syncs on every local build, but
+  that mutation is uncommitted, so CI can pass while the publishable snapshot is stale. A test
+  closes the gap and also catches pure-metadata drift (e.g. a bumped `engineVersion`) that the
+  corpus parity test misses.
 
 ---
 
