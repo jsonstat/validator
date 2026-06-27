@@ -107,7 +107,7 @@ npx jsonstat-validate my-cube.json --format json
     }
   ],
   "summary": { "errors": 1, "warnings": 0, "infos": 0, "structuralErrors": 0, "byCode": { "VALUE_LEN_MISMATCH": 1 } },
-  "meta": { "engineVersion": "0.2.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
+  "meta": { "engineVersion": "0.3.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
 }
 ```
 

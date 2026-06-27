@@ -93,7 +93,7 @@ const result = await validateFile("./my-cube.json");
   ],
   "summary": { "errors": 1, "warnings": 0, "infos": 0, "structuralErrors": 0, "byCode": { "VALUE_LEN_MISMATCH": 1 } },
   "options": { /* resolved ValidateOptions */ },
-  "meta": { "engineVersion": "0.2.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
+  "meta": { "engineVersion": "0.3.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
 }
 ```
 
@@ -306,30 +306,71 @@ published tarball carries everything it needs. The Rust crate does the equivalen
 [esbuild](https://esbuild.github.io/) to emit two self-contained files under `dist/browser/`:
 `jsonstat-validator.min.js` (IIFE, global `JsonstatValidator`) and `jsonstat-validator.mjs` (ESM).
 
+### Publishing
+
+Releases are cut by [`release.yml`](.github/workflows/release.yml), which publishes **two** places on a
+GitHub Release (or `workflow_dispatch`):
+
+- **npm** (the `@jsonstat-validator/ts`, `jsonstat-validate`, and `@jsonstat-validator/wasm` packages)
+  uses **npm Trusted Publishing (OpenID Connect)** — no stored token. Prerequisite: each package is
+  registered as a Trusted Publisher trusting this repo + workflow file on the npm side.
+- **crates.io** (the `jsonstat-validator` crate) has **no OIDC equivalent**, so it authenticates with a
+  long-lived `CARGO_REGISTRY_TOKEN` stored as an **environment secret** named exactly that, under a
+  GitHub environment named exactly **`crates-io`** (matching `environment: crates-io` in the workflow).
+  The token's first publish needs `publish-new` scope (creating the crate) plus `publish-update`
+  (every version after); once the crate exists, rotate it to a crate-scoped `publish-update` token.
+
+Recommended repo setup before the first publish:
+
+1. **Settings → Environments → New environment** → name it `crates-io`; optionally enable *Required
+   reviewers* and limit *Deployment branches and tags*.
+2. On that environment → **Add secret** → name `CARGO_REGISTRY_TOKEN`, paste a crates.io API token.
+3. Dry-run locally: `cargo publish --dry-run --manifest-path crates/validator/Cargo.toml`.
+4. Tag and push `vX.Y.Z`, create the GitHub Release; both jobs run (crate job awaits approval if you
+   set a reviewer).
+
+Always commit the root [`rules-manifest.json`](rules-manifest.json) bump and the Rust
+[`_vendored`](crates/validator/src/_vendored/manifest/rules-manifest.json) snapshot **together** —
+[`vendored_parity.rs`](crates/validator/tests/vendored_parity.rs) compares committed blobs, so they
+must land in the same commit or that test fails.
+
 ---
 
-## Roadmap
+## Status
 
-- **M1/M2** ✅ TypeScript engine, full rule set, corpus, CLI.
-- **M3** ✅ Rust port + corpus parity.
-- **M4** ✅ Wasm surface: the crate compiles to WebAssembly (`wasm-pack -t web`, with
-  `RUSTFLAGS='--cfg getrandom_backend="wasm_js"'`); the [`@jsonstat-validator/wasm`](packages/wasm)
-  JS wrapper exposes the same `validate()` shape as the TS package; and a TS↔Wasm corpus parity test
-  ([`packages/wasm/test/parity.test.ts`](packages/wasm/test/parity.test.ts)) runs in CI, completing
-  the TS ↔ Rust ↔ Wasm parity triangle. (The parity test surfaced two required crate fixes:
-  `std::time::Instant` panics on `wasm32-unknown-unknown`, so it is replaced by a no-op `Timer` on
-  that target; and `console_error_panic_hook` is installed so panics appear as readable console
-  messages instead of an opaque `unreachable` trap.)
-- **M5** ⏳ npm + crates.io publish, `curated/` de-duplicated schemas (with curated≡vendored parity
-  test), full CI/release.
-- **Follow-up** ✅ Rust crate `_vendored` parity test —
-  [`crates/validator/tests/vendored_parity.rs`](crates/validator/tests/vendored_parity.rs) asserts
-  the committed snapshot stays byte-identical to the repo-root sources
-  ([`rules-manifest.json`](rules-manifest.json), [`schemas/vendored/*.json`](schemas/vendored)).
-  It compares **committed (`git HEAD`) blobs**, not the working tree — `build.rs` re-syncs the
-  working tree on every local build, so a naive on-disk test would always pass; this one catches
-  pure-metadata drift (e.g. a bumped `engineVersion`) that the corpus parity test misses. It skips
-  in `cargo publish` / `cargo package` verify mode.
+Three native surfaces ship and are kept at **parity** — they emit identical findings on identical
+input:
+
+- **TypeScript / Node** — [`@jsonstat-validator/ts`](packages/ts) plus the [`jsonstat-validate`](cli) CLI.
+- **Rust** — the [`jsonstat-validator`](crates/validator) crate.
+- **Wasm** — [`@jsonstat-validator/wasm`](packages/wasm), a thin JS wrapper over the crate.
+
+Parity is **enforced, not asserted**: one shared [`corpus/cases.json`](corpus/cases.json) drives the
+TS and Rust suites and the TS↔Wasm parity test that runs in CI, closing the TS ↔ Rust ↔ Wasm
+triangle. A committed-snapshot guard
+([`crates/validator/tests/vendored_parity.rs`](crates/validator/tests/vendored_parity.rs)) keeps the
+Rust `_vendored` copy byte-identical to the repo-root [`rules-manifest.json`](rules-manifest.json)
+and [`schemas/vendored/`](schemas/vendored), catching pure-metadata drift the corpus test misses.
+Releases publish via [`release.yml`](.github/workflows/release.yml): npm through Trusted Publishing
+(OIDC), and the Rust crate to crates.io through a `CARGO_REGISTRY_TOKEN` secret.
+
+### Versioning
+
+The package is **pre-1.0**. `engineVersion` is `0.3.0`; the error-code vocabulary is versioned
+independently via `meta.ruleSetVersion` (`1.0.0`, append-only within a major) so downstream tooling
+can branch on the vocabulary rather than the package version — see [`DESIGN.md §4.5`](DESIGN.md).
+The public `validate()` surface and result shape are stable in practice, but breaking changes remain
+allowed before `1.0.0`.
+
+### Toward 1.0.0
+
+Remaining work tracked toward the `1.0.0` cut (see [`CHANGELOG.md`](CHANGELOG.md)):
+
+- `schemas/curated/` de-duplicated schema set, with a curated≡vendored parity test.
+- A curated-parity CI job (pending the `curated/` schemas above).
+- A written SemVer / `ruleSetVersion` stability policy as the commitment artifact for `1.0.0`.
+
+The M1–M5 milestone history is recorded in [`DESIGN.md §11`](DESIGN.md) and the git log.
 
 ---
 

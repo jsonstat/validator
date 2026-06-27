@@ -1,6 +1,6 @@
 {
   "name": "@jsonstat-validator/wasm",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "WebAssembly surface of jsonstat-validator — a thin JS wrapper over the Rust crate, exposing the same validate() signature as @jsonstat-validator/ts.",
   "license": "Apache-2.0",
   "author": "JSON-stat contributors",
@@ -54,7 +54,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@jsonstat-validator/ts": "^0.2.0",
+    "@jsonstat-validator/ts": "^0.3.0",
     "@types/node": "^22.10.0",
     "typescript": "^5.7.2"
   }

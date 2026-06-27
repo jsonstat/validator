@@ -1,6 +1,6 @@
 {
   "name": "@jsonstat-validator/ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Semantic validator for JSON-stat 2.0 — layers cross-field cube invariants on top of the official JSON Schema 2020-12 definitions.",
   "license": "Apache-2.0",
   "author": "JSON-stat contributors",

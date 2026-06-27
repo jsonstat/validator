@@ -13,7 +13,7 @@ name: Release
 # Triggers:
 #   - release: published  -> every new GitHub Release publishes automatically.
 #   - workflow_dispatch    -> manual run; pick the branch/tag to publish from.
-#                             Use this to publish v0.2.0 the first time.
+#                             Use this to publish v0.3.0 the first time.
 on:
   release:
     types: [published]
@@ -73,3 +73,33 @@ jobs:
 
       - name: Publish @jsonstat-validator/wasm
         run: npm publish --workspace @jsonstat-validator/wasm --access public --provenance
+
+  publish-crate:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    # crates.io has NO OIDC trusted publishing (unlike npm above): it requires a long-lived
+    # API token stored as the repo secret CARGO_REGISTRY_TOKEN. The `crates-io` environment
+    # scopes that secret and can require manual approval before a crate is published.
+    # Prerequisite (crates.io side): create the `crates-io` environment in repo Settings ->
+    # Environments and add CARGO_REGISTRY_TOKEN (an API token from https://crates.io/settings/tokens
+    # with publish-new + publish-update scope) there. Without it, this job fails with an auth error.
+    environment: crates-io
+    steps:
+      # For a `release` event, check out the exact released tag.
+      # For `workflow_dispatch`, check out the selected ref (branch or tag).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # `cargo publish` packs the self-contained `_vendored` snapshot (rules-manifest.json +
+      # schemas) and runs the build verification. The vendored_parity test skips in verify
+      # mode and build.rs re-syncs the snapshot, so this publishes cleanly from a checkout.
+      - name: cargo publish
+        working-directory: crates/validator
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish
