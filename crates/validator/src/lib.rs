@@ -11,7 +11,7 @@ pub mod pipeline;
 pub mod rules;
 pub mod structural;
 pub mod types;
-#[cfg(feature = "wasm")]
+#[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
 pub use manifest::manifest;

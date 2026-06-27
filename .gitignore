@@ -9,6 +9,7 @@ dist/
 
 # Generated build inputs (regenerated, never hand-edited)
 packages/ts/src/generated/
+packages/wasm/pkg/
 # NOTE: crates/validator/src/_vendored/ is intentionally COMMITTED (not gitignored). It is the
 # self-contained snapshot that `cargo publish` packs and the verification build reads via
 # include_str!. build.rs keeps it in sync with ../../rules-manifest.json and

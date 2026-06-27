@@ -45,7 +45,7 @@ they produce identical findings on identical input.
 | **CLI** | [`jsonstat-validate`](https://www.npmjs.com/package/jsonstat-validate) | `npx jsonstat-validate` (no install) |
 | **Browser / CDN** | — | `<script src>` (see [Web / CDN](#web--cdn)) |
 | **Rust** | [`jsonstat-validator`](https://crates.io/crates/jsonstat-validator) | `cargo add jsonstat-validator` |
-| **Wasm** | `jsonstat-validator` (`--features wasm`) | 🚧 in progress — see [Roadmap](#roadmap) |
+| **Wasm (JS)** | [`@jsonstat-validator/wasm`](https://www.npmjs.com/package/@jsonstat-validator/wasm) | `npm i @jsonstat-validator/wasm` |
 
 ---
 
@@ -93,7 +93,7 @@ const result = await validateFile("./my-cube.json");
   ],
   "summary": { "errors": 1, "warnings": 0, "infos": 0, "structuralErrors": 0, "byCode": { "VALUE_LEN_MISMATCH": 1 } },
   "options": { /* resolved ValidateOptions */ },
-  "meta": { "engineVersion": "0.1.1", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
+  "meta": { "engineVersion": "0.2.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
 }
 ```
 
@@ -234,6 +234,34 @@ echo '{"version":"2.0","class":"dataset","id":["x"],"size":[2],"dimension":{"x":
 
 ---
 
+## Quick start — Wasm
+
+The Wasm surface is a thin JS wrapper over the Rust crate, exposing the **same `validate()` shape**
+as `@jsonstat-validator/ts`. The crate is compiled to WebAssembly with
+[`wasm-pack`](https://rustwasm.github.io/wasm-pack/) (`--target web`).
+
+```bash
+npm install @jsonstat-validator/wasm
+```
+
+```ts
+import { init, validate } from "@jsonstat-validator/wasm";
+
+await init();                       // load the .wasm once (the browser fetches it)
+const result = validate(doc);       // same ValidationResult shape as @jsonstat-validator/ts
+console.log(result.valid, result.summary);
+```
+
+In Node, import from `@jsonstat-validator/wasm/node` instead — it auto-loads the `.wasm` from disk
+and also exports `validateFile()`. See [`packages/wasm/README.md`](packages/wasm/README.md) for the
+full surface, and note that `options.onFinding` / `options.budget` are not carried across the
+JS↔wasm boundary (findings are still returned in full).
+
+> The Wasm surface emits the **same semantic findings** as the TS and Rust surfaces — enforced by a
+> TS↔Wasm corpus parity test that runs in CI.
+
+---
+
 ## Error codes
 
 See [`rules-manifest.json`](rules-manifest.json) for the authoritative, append-only catalogue. Codes
@@ -284,17 +312,24 @@ published tarball carries everything it needs. The Rust crate does the equivalen
 
 - **M1/M2** ✅ TypeScript engine, full rule set, corpus, CLI.
 - **M3** ✅ Rust port + corpus parity.
-- **M4** ✅ Wasm surface compiles (`cargo build --features wasm --target wasm32-unknown-unknown` with
-  `RUSTFLAGS='--cfg getrandom_backend="wasm_js"'`); JS wrapper + cross-validation still pending.
+- **M4** ✅ Wasm surface: the crate compiles to WebAssembly (`wasm-pack -t web`, with
+  `RUSTFLAGS='--cfg getrandom_backend="wasm_js"'`); the [`@jsonstat-validator/wasm`](packages/wasm)
+  JS wrapper exposes the same `validate()` shape as the TS package; and a TS↔Wasm corpus parity test
+  ([`packages/wasm/test/parity.test.ts`](packages/wasm/test/parity.test.ts)) runs in CI, completing
+  the TS ↔ Rust ↔ Wasm parity triangle. (The parity test surfaced two required crate fixes:
+  `std::time::Instant` panics on `wasm32-unknown-unknown`, so it is replaced by a no-op `Timer` on
+  that target; and `console_error_panic_hook` is installed so panics appear as readable console
+  messages instead of an opaque `unreachable` trap.)
 - **M5** ⏳ npm + crates.io publish, `curated/` de-duplicated schemas (with curated≡vendored parity
   test), full CI/release.
-- **Follow-up** ⏳ Rust crate `_vendored` parity test — assert the committed
-  [`crates/validator/src/_vendored/`](crates/validator/src/_vendored) snapshot stays byte-identical
-  to the repo-root sources ([`rules-manifest.json`](rules-manifest.json),
-  [`schemas/vendored/*.json`](schemas/vendored)). `build.rs` re-syncs on every local build, but
-  that mutation is uncommitted, so CI can pass while the publishable snapshot is stale. A test
-  closes the gap and also catches pure-metadata drift (e.g. a bumped `engineVersion`) that the
-  corpus parity test misses.
+- **Follow-up** ✅ Rust crate `_vendored` parity test —
+  [`crates/validator/tests/vendored_parity.rs`](crates/validator/tests/vendored_parity.rs) asserts
+  the committed snapshot stays byte-identical to the repo-root sources
+  ([`rules-manifest.json`](rules-manifest.json), [`schemas/vendored/*.json`](schemas/vendored)).
+  It compares **committed (`git HEAD`) blobs**, not the working tree — `build.rs` re-syncs the
+  working tree on every local build, so a naive on-disk test would always pass; this one catches
+  pure-metadata drift (e.g. a bumped `engineVersion`) that the corpus parity test misses. It skips
+  in `cargo publish` / `cargo package` verify mode.
 
 ---
 

@@ -1,0 +1,61 @@
+{
+  "name": "@jsonstat-validator/wasm",
+  "version": "0.2.0",
+  "description": "WebAssembly surface of jsonstat-validator — a thin JS wrapper over the Rust crate, exposing the same validate() signature as @jsonstat-validator/ts.",
+  "license": "Apache-2.0",
+  "author": "JSON-stat contributors",
+  "homepage": "https://github.com/jsonstat/validator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsonstat/validator.git",
+    "directory": "packages/wasm"
+  },
+  "bugs": {
+    "url": "https://github.com/jsonstat/validator/issues"
+  },
+  "keywords": [
+    "json-stat",
+    "jsonstat",
+    "validator",
+    "validation",
+    "wasm",
+    "webassembly",
+    "rust",
+    "semantic"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg",
+    "src",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:wasm": "node tools/build.mjs",
+    "build": "npm run build:wasm && tsc",
+    "pretest": "npm run build:wasm",
+    "test": "node --loader ./tools/ts-loader.mjs --test test/parity.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@jsonstat-validator/ts": "^0.2.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

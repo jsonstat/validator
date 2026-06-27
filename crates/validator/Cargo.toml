@@ -1,6 +1,6 @@
 [package]
 name = "jsonstat-validator"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Semantic validator for JSON-stat 2.0 — cross-field cube invariants on top of the official JSON Schema 2020-12 definitions."
@@ -16,15 +16,22 @@ serde_json = "1"
 # default-features = false: the schemas are fully self-contained (no external $ref), so we don't
 # need jsonschema's HTTP/file retrievers (which are not wasm-compatible).
 jsonschema = { version = "0.22", default-features = false }
-wasm-bindgen = { version = "0.2", optional = true }
-serde-wasm-bindgen = { version = "0.6", optional = true }
 
 [features]
 default = []
-# Enable to build the WebAssembly surface (crates/validator/src/wasm.rs).
-wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen"]
+# Legacy no-op feature, kept for backwards compatibility with the documented command
+# `cargo build --features wasm --target wasm32-unknown-unknown`. The WebAssembly surface
+# (src/wasm.rs) is now compiled automatically whenever the target arch is wasm32, so
+# `wasm-pack build` works without passing a feature (wasm-pack has no --features flag).
+wasm = []
 
-# On wasm32, enable getrandom's wasm_js backend (required by a transitive dependency in the
-# jsonschema tree). Build with: RUSTFLAGS='--cfg getrandom_backend="wasm_js"'.
+# WebAssembly surface dependencies, pulled automatically on wasm32 builds so src/wasm.rs compiles.
+# On wasm32, getrandom needs the wasm_js backend cfg: build with
+# RUSTFLAGS='--cfg getrandom_backend="wasm_js"' (see packages/wasm/tools/build.mjs).
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+# Prints Rust panic messages (with location) to the JS console instead of trapping on an opaque
+# `unreachable`. Installed once at the top of validate_json().
+console_error_panic_hook = "0.1"
 getrandom = { version = "0.3", features = ["wasm_js"] }

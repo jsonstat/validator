@@ -7,10 +7,36 @@ use crate::types::*;
 use serde_json::Value;
 use std::collections::BTreeMap;
 
+// Timing. std::time::Instant panics on wasm32-unknown-unknown (there is no monotonic clock on that
+// target — see std::sys::time::unsupported), so the Wasm surface uses a no-op timer and reports
+// durationMs = 0. Everywhere else uses a real Instant.
+#[cfg(not(target_arch = "wasm32"))]
+struct Timer(std::time::Instant);
+#[cfg(not(target_arch = "wasm32"))]
+impl Timer {
+    fn start() -> Self {
+        Timer(std::time::Instant::now())
+    }
+    fn elapsed_ms(&self) -> u64 {
+        self.0.elapsed().as_millis() as u64
+    }
+}
+#[cfg(target_arch = "wasm32")]
+struct Timer;
+#[cfg(target_arch = "wasm32")]
+impl Timer {
+    fn start() -> Self {
+        Timer
+    }
+    fn elapsed_ms(&self) -> u64 {
+        0
+    }
+}
+
 const MAX_CELLS: u64 = 50_000_000;
 
 pub fn validate_from_str(json: &str, options: &ValidateOptions) -> ValidationResult {
-    let start = std::time::Instant::now();
+    let start = Timer::start();
     match serde_json::from_str::<Value>(json) {
         Ok(v) => validate(&v, options),
         Err(e) => {
@@ -27,13 +53,13 @@ pub fn validate_from_str(json: &str, options: &ValidateOptions) -> ValidationRes
                 spec_ref: r.spec_ref.clone(),
                 meta: None,
             };
-            finalize(vec![f], options, start)
+            finalize(vec![f], options, &start)
         }
     }
 }
 
 pub fn validate(doc: &Value, options: &ValidateOptions) -> ValidationResult {
-    let start = std::time::Instant::now();
+    let start = Timer::start();
     let mf = manifest();
     let ro = resolve_options(options);
     let mut findings: Vec<Finding> = Vec::new();
@@ -64,7 +90,7 @@ pub fn validate(doc: &Value, options: &ValidateOptions) -> ValidationResult {
         // dimension-class responses: structural covers shape; no size context for semantic
     }
 
-    finalize(findings, options, start)
+    finalize(findings, options, &start)
 }
 
 fn looks_like_bundle(doc: &Value) -> bool {
@@ -159,11 +185,7 @@ fn run_collection(
     }
 }
 
-fn finalize(
-    all: Vec<Finding>,
-    options: &ValidateOptions,
-    start: std::time::Instant,
-) -> ValidationResult {
+fn finalize(all: Vec<Finding>, options: &ValidateOptions, start: &Timer) -> ValidationResult {
     let mf = manifest();
     let ro = resolve_options(options);
     let valid = all.iter().all(|f| f.severity != Severity::Error);
@@ -196,7 +218,7 @@ fn finalize(
         engine_version: mf.engine_version.clone(),
         rule_set_version: mf.rule_set_version.clone(),
         schema_version: mf.schema_version.clone(),
-        duration_ms: start.elapsed().as_millis(),
+        duration_ms: start.elapsed_ms(),
     };
 
     ValidationResult {

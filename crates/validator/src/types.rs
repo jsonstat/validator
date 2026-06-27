@@ -60,8 +60,10 @@ pub struct ResultMeta {
     pub rule_set_version: String,
     #[serde(rename = "schemaVersion")]
     pub schema_version: String,
+    /// Validation wall-clock time in ms (0 on the Wasm surface, which has no monotonic clock).
+    /// u64 (not u128) keeps the value serde-wasm-bindgen-safe.
     #[serde(rename = "durationMs")]
-    pub duration_ms: u128,
+    pub duration_ms: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]

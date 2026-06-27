@@ -47,5 +47,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - run: cargo build --features wasm --target wasm32-unknown-unknown
-        working-directory: crates/validator
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Build the TS surface first: the Wasm parity test imports @jsonstat-validator/ts.
+      - run: npm ci
+      - run: npm run build -w @jsonstat-validator/ts
+      # `npm test` runs `pretest` (wasm-pack -t web -> packages/wasm/pkg, with the getrandom cfg set
+      # in tools/build.mjs) then the TS<->Wasm corpus parity test (packages/wasm/test/parity.test.ts).
+      - run: npm test -w @jsonstat-validator/wasm
