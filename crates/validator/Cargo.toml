@@ -5,6 +5,12 @@ edition = "2021"
 license = "Apache-2.0"
 description = "Semantic validator for JSON-stat 2.0 — cross-field cube invariants on top of the official JSON Schema 2020-12 definitions."
 repository = "https://github.com/jsonstat/validator"
+# crates.io renders this in the package page. The README lives at the repo root (not in
+# crates/validator/); cargo copies it into the published tarball as README.md. Without this
+# field, crates.io shows "no readme" (the published 0.3.0 was the symptom).
+readme = "../../README.md"
+keywords = ["json-stat", "jsonstat", "validator", "validation", "statistics"]
+categories = ["parser-implementations"]
 
 [lib]
 name = "jsonstat_validator"

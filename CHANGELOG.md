@@ -11,10 +11,21 @@ The error-code vocabulary is versioned **independently** of the package via `met
 
 ## [Unreleased]
 
-Changes staged for the **0.3.0** release. `0.3.0` was chosen over `1.0.0` on purpose — see the
-README "Status" section: the `schemas/curated/` schema architecture is still pending, so the
-`1.0.0` stability commitments (a written SemVer / `ruleSetVersion`
-policy, this changelog as the artifact) are deferred to a follow-up release.
+Staged for the next release. Not yet published.
+
+### Added
+- `readme`, `keywords`, and `categories` metadata to the Rust crate manifest
+  ([`crates/validator/Cargo.toml`](crates/validator/Cargo.toml)) so crates.io renders the README and
+  surfaces the crate under discovery tags. (`0.3.0` shipped without a `readme`, so its crates.io page
+  showed "no readme"; this takes effect from the next published version — published versions are
+  immutable, so `0.3.0` itself cannot be retro-fixed.)
+
+## [0.3.0] - 2026-06-27
+
+`0.3.0` was chosen over `1.0.0` on purpose — see the README "Status" section: the
+`schemas/curated/` schema architecture is still pending, so the `1.0.0` stability commitments (a
+written SemVer / `ruleSetVersion` policy, this changelog as the artifact) are deferred to a
+follow-up release.
 
 ### Added
 - A `publish-crate` job in [`release.yml`](.github/workflows/release.yml) that publishes the
@@ -53,5 +64,6 @@ policy, this changelog as the artifact) are deferred to a follow-up release.
 Initial TypeScript engine, full S/D/C rule set, shared corpus, and the CLI (M1/M2), and the Rust
 port with corpus parity (M3). See the git history for details.
 
-[Unreleased]: https://github.com/jsonstat/validator/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/jsonstat/validator/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jsonstat/validator/releases/tag/v0.3.0
 [0.2.0]: https://github.com/jsonstat/validator/releases/tag/v0.2.0
