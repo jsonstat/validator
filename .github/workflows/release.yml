@@ -1,0 +1,75 @@
+name: Release
+
+# Publishes the npm packages using **npm Trusted Publishing (OpenID Connect)**.
+# NO long-lived npm token (NPM_TOKEN) is stored or used: the npm registry trusts
+# THIS workflow via OIDC, so each publish is authenticated with a short-lived,
+# per-run token minted from GitHub's OIDC provider.
+#
+# Prerequisite (npm side, per package): register a Trusted Publisher so the npm
+# registry trusts this repository + workflow file. See the release notes / docs
+# for the exact fields (repository owner, repository name, workflow filename,
+# optional environment). Without this, npm will reject the publish with 403.
+#
+# Triggers:
+#   - release: published  -> every new GitHub Release publishes automatically.
+#   - workflow_dispatch    -> manual run; pick the branch/tag to publish from.
+#                             Use this to publish v0.2.0 the first time.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # required for npm Trusted Publishing (OIDC) + provenance
+
+concurrency:
+  group: release-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      # For a `release` event, check out the exact released tag.
+      # For `workflow_dispatch`, check out the selected ref (branch or tag).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      # Trusted Publishing requires npm CLI v11+. Node 22 ships npm 10, so upgrade.
+      - name: Upgrade npm to v11
+        run: npm install -g npm@11
+
+      - name: Setup Rust + wasm32 target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Install dependencies
+        run: npm ci
+
+      # prepublishOnly in each package runs the build automatically.
+      # Publish order: ts -> cli -> wasm (wasm's build resolves
+      # @jsonstat-validator/ts from the workspace, and ts is published first).
+      # --provenance engages the OIDC trusted-publishing flow (tokenless).
+      - name: Publish @jsonstat-validator/ts
+        run: npm publish --workspace @jsonstat-validator/ts --access public --provenance
+
+      - name: Publish jsonstat-validate (CLI)
+        run: npm publish --workspace jsonstat-validate --access public --provenance
+
+      - name: Publish @jsonstat-validator/wasm
+        run: npm publish --workspace @jsonstat-validator/wasm --access public --provenance
