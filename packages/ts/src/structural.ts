@@ -14,10 +14,11 @@ import { lookupRule } from "./manifest.js";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
-// The vendored schemas use `\-` (escaped hyphen) in the `updated` date pattern, which is an
-// invalid escape under a Unicode-flag RegExp. None of the schemas use Unicode property escapes,
-// so disabling unicodeRegExp keeps identical matching while letting the patterns compile.
-const ajv = new (Ajv2020 as any)({ allErrors: true, strict: false, unicodeRegExp: false });
+// The curated/bundled schemas (schemas/curated/bundled/*.json) write the `updated` date hyphen
+// literally, so their patterns compile cleanly under the default Unicode-flag RegExp. (The vendored
+// upstream originals use an invalid `\-` escape and need a `unicodeRegExp: false` workaround — kept
+// only for the curated-equiv-vendored parity test, not the production structural pass.)
+const ajv = new (Ajv2020 as any)({ allErrors: true, strict: false });
 (addFormats as any)(ajv);
 
 const compiled = {

@@ -1,6 +1,6 @@
 [package]
 name = "jsonstat-validator"
-version = "0.3.0"
+version = "1.0.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Semantic validator for JSON-stat 2.0 — cross-field cube invariants on top of the official JSON Schema 2020-12 definitions."

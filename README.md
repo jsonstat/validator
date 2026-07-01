@@ -93,7 +93,7 @@ const result = await validateFile("./my-cube.json");
   ],
   "summary": { "errors": 1, "warnings": 0, "infos": 0, "structuralErrors": 0, "byCode": { "VALUE_LEN_MISMATCH": 1 } },
   "options": { /* resolved ValidateOptions */ },
-  "meta": { "engineVersion": "0.3.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
+  "meta": { "engineVersion": "1.0.0", "ruleSetVersion": "1.0.0", "schemaVersion": "1.05", "durationMs": 3 }
 }
 ```
 
@@ -347,30 +347,34 @@ input:
 
 Parity is **enforced, not asserted**: one shared [`corpus/cases.json`](corpus/cases.json) drives the
 TS and Rust suites and the TS↔Wasm parity test that runs in CI, closing the TS ↔ Rust ↔ Wasm
-triangle. A committed-snapshot guard
+triangle. The **curated≡vendored** structural-parity gate
+([`packages/ts/test/curated-parity.test.ts`](packages/ts/test/curated-parity.test.ts),
+[`crates/validator/tests/curated_equiv_vendored.rs`](crates/validator/tests/curated_equiv_vendored.rs),
+and the dedicated CI job) proves the de-duplicated [`schemas/curated/`](schemas/curated) set the
+validator loads produces identical outcomes to the verbatim [`schemas/vendored/`](schemas/vendored)
+originals. A committed-snapshot drift guard
 ([`crates/validator/tests/vendored_parity.rs`](crates/validator/tests/vendored_parity.rs)) keeps the
-Rust `_vendored` copy byte-identical to the repo-root [`rules-manifest.json`](rules-manifest.json)
-and [`schemas/vendored/`](schemas/vendored), catching pure-metadata drift the corpus test misses.
+Rust `_vendored` copy byte-identical to its sources — [`rules-manifest.json`](rules-manifest.json)
+and the bundled curated schemas — catching pure-metadata drift the corpus test misses.
 Releases publish via [`release.yml`](.github/workflows/release.yml): npm through Trusted Publishing
 (OIDC), and the Rust crate to crates.io through a `CARGO_REGISTRY_TOKEN` secret.
 
 ### Versioning
 
-The package is **pre-1.0**. `engineVersion` is `0.3.0`; the error-code vocabulary is versioned
-independently via `meta.ruleSetVersion` (`1.0.0`, append-only within a major) so downstream tooling
-can branch on the vocabulary rather than the package version — see [`DESIGN.md §4.5`](DESIGN.md).
-The public `validate()` surface and result shape are stable in practice, but breaking changes remain
-allowed before `1.0.0`.
+The package is at **`1.0.0`** — the public `validate()` surface, the `ValidationResult` shape, and
+the `Finding`/`Summary` types are now stable: code written against the 1.0.0 API will keep compiling
+and producing the same verdicts through all `1.x`. Results carry three independent version axes:
 
-### Toward 1.0.0
+- **`engineVersion`** (`1.0.0`) — the validator software itself (npm packages, crate, CLI, Wasm).
+- **`ruleSetVersion`** (`1.0.0`) — the error-code vocabulary, versioned **independently** of the
+  package. Codes are append-only within a major; severity may only tighten (a minor), and removal is
+  a major. Branch on `meta.ruleSetVersion` when you care about which codes can appear.
+- **`schemaVersion`** (`1.05`) — the JSON-stat format revision the validator targets.
 
-Remaining work tracked toward the `1.0.0` cut (see [`CHANGELOG.md`](CHANGELOG.md)):
-
-- `schemas/curated/` de-duplicated schema set, with a curated≡vendored parity test.
-- A curated-parity CI job (pending the `curated/` schemas above).
-- A written SemVer / `ruleSetVersion` stability policy as the commitment artifact for `1.0.0`.
-
-The M1–M5 milestone history is recorded in [`DESIGN.md §11`](DESIGN.md) and the git log.
+The full SemVer commitment — what counts as the stable surface, the diagnostic-result guarantees,
+the schema provenance (curated vs vendored), and the deprecation policy — is in
+[`STABILITY.md`](STABILITY.md). The M1–M5 milestone history is in [`DESIGN.md §11`](DESIGN.md) and
+the git log.
 
 ---
 

@@ -1,0 +1,27 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "JSON-stat 2.0 Curated Index Schema",
+	"$id": "https://json-stat.org/curated/2.0/index.json",
+	"description": "Curated de-duplicated index schema (general oneOf of all three classes). The vendored schemas/vendored/index.json re-inlines the full per-class property sets three times inside its oneOf; this version $refs core.json#/$defs/{datasetProperties,dimensionProperties,collectionProperties} once each, which is the single largest de-duplication win. Semantically equivalent (enforced by the curated-equiv-vendored parity test).",
+
+	"oneOf": [
+		{
+			"type": "object",
+			"properties": { "$ref": "core.json#/$defs/datasetProperties" },
+			"additionalProperties": false,
+			"required": [ "version", "class", "value", "id", "size", "dimension" ]
+		},
+		{
+			"type": "object",
+			"properties": { "$ref": "core.json#/$defs/dimensionProperties" },
+			"additionalProperties": false,
+			"required": [ "version", "class", "category" ]
+		},
+		{
+			"type": "object",
+			"properties": { "$ref": "core.json#/$defs/collectionProperties" },
+			"additionalProperties": false,
+			"required": [ "version", "class", "link" ]
+		}
+	]
+}

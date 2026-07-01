@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "JSON-stat 2.0 Curated Dataset Schema",
+	"$id": "https://json-stat.org/curated/2.0/dataset.json",
+	"description": "Curated de-duplicated dataset schema. All shared definitions live in core.json and are inlined by tools/bundle-schemas.mjs at build time. Semantically equivalent to the vendored schemas/vendored/dataset.json (enforced by the curated-equiv-vendored parity test).",
+
+	"type": "object",
+	"properties": { "$ref": "core.json#/$defs/datasetProperties" },
+	"additionalProperties": false,
+	"required": [ "version", "class", "value", "id", "size", "dimension" ]
+}

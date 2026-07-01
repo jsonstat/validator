@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "JSON-stat 2.0 Curated Collection Schema",
+	"$id": "https://json-stat.org/curated/2.0/collection.json",
+	"description": "Curated de-duplicated collection schema. All shared definitions live in core.json and are inlined by tools/bundle-schemas.mjs at build time. Semantically equivalent to the vendored schemas/vendored/collection.json (enforced by the curated-equiv-vendored parity test). The vendored original re-inlines the full link-item property set; this one $refs core.json#/$defs/linkItemProperties.",
+
+	"type": "object",
+	"properties": { "$ref": "core.json#/$defs/collectionProperties" },
+	"additionalProperties": false,
+	"required": [ "version", "class", "link" ]
+}

@@ -9,7 +9,8 @@
     "cli"
   ],
   "scripts": {
-    "gen": "npm run gen -w @jsonstat-validator/ts",
+    "bundle": "node tools/bundle-schemas.mjs",
+    "gen": "npm run bundle && npm run gen -w @jsonstat-validator/ts",
     "build": "npm run build -w @jsonstat-validator/ts && npm run build -w jsonstat-validate",
     "test": "npm run test -w @jsonstat-validator/ts",
     "test:rust": "cargo test --manifest-path crates/validator/Cargo.toml",
@@ -20,6 +21,7 @@
     "prepare": "node tools/prepare.mjs"
   },
   "devDependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.1.2",
     "esbuild": "^0.24.0"
   }
 }

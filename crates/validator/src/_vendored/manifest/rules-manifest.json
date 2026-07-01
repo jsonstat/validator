@@ -1,5 +1,5 @@
 {
-  "engineVersion": "0.3.0",
+  "engineVersion": "1.0.0",
   "ruleSetVersion": "1.0.0",
   "schemaVersion": "1.05",
   "description": "Single source of truth for the jsonstat-validator rule catalogue, error codes, severities and message hints. Loaded verbatim by the TypeScript surface (fs) and the Rust surface (include_str!). Codes are append-only within a ruleSetVersion major.",

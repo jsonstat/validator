@@ -39,6 +39,33 @@ jobs:
       - run: cargo test
         working-directory: crates/validator
 
+  # Curated≡vendored parity gate (README "Toward 1.0.0" item 2 / DESIGN.md §2.3).
+  #
+  # The de-duplicated curated schemas (schemas/curated/*.json + core.json) are the single sources of
+  # truth the validator loads; the vendored originals (schemas/vendored/) are the verbatim upstream
+  # quote. This job enforces the two stay in lock-step:
+  #  1. Bundler determinism: regenerate schemas/curated/bundled/ from the authored sources and assert
+  #     the committed output is byte-identical — catches "edited core.json but forgot to re-bundle +
+  #     commit". (The Rust-side snapshot drift guard, vendored_parity.rs, is the downstream analog:
+  #     it asserts that same committed bundled output matches the embedded _vendored snapshot.)
+  #  2. Outcome parity: run the curated≡vendored corpus comparison explicitly so the guarantee is a
+  #     named status check (also exercised by the typescript job's full `npm test`).
+  curated-parity:
+    name: Curated parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - name: Re-bundle curated schemas
+        run: npm run bundle
+      - name: Committed bundled output is fresh
+        run: git diff --exit-code -- schemas/curated/bundled/
+      - name: Curated ≡ vendored outcome parity
+        run: npm run test:curated-parity -w @jsonstat-validator/ts
+
   wasm:
     name: WebAssembly
     runs-on: ubuntu-latest

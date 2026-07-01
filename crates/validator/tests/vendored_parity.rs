@@ -1,14 +1,21 @@
-// Follow-up parity test: the COMMITTED `src/_vendored/` snapshot must stay byte-identical to the
-// repo-root single sources of truth (`../../rules-manifest.json`, `../../schemas/vendored/*.json`).
+// Snapshot drift guard: the COMMITTED `src/_vendored/` snapshot must stay byte-identical to the
+// repo-root single sources of truth it is generated from — the manifest (`../../rules-manifest.json`)
+// and the BUNDLED CURATED schemas (`../../schemas/curated/bundled/*.json`).
 //
-// Why this exists (per README roadmap "Follow-up"): `build.rs` re-syncs the snapshot into the
-// *working tree* on every local build, but that mutation is uncommitted — so the working tree always
-// looks correct and CI can pass while the *publishable* snapshot is stale. A naive test that reads
-// the on-disk snapshot would therefore always pass (build.rs just fixed it).
+// Why this exists: `build.rs` re-syncs the snapshot into the *working tree* on every local build,
+// but that mutation is uncommitted — so the working tree always looks correct and CI can pass while
+// the *publishable* snapshot is stale. A naive test that reads the on-disk snapshot would therefore
+// always pass (build.rs just fixed it).
 //
 // Fix: compare the COMMITTED blobs (`git show HEAD:<...>`) for the root source vs the snapshot.
 // build.rs only ever writes the working tree, never git, so this is the drift signal the corpus
 // parity test cannot see (it also catches pure-metadata drift, e.g. a bumped `engineVersion`).
+//
+// NOTE (1.0.0): the schema source is the CURATED/BUNDLED set (de-duplicated, `\-` fixed), NOT the
+// verbatim `schemas/vendored/` originals. build.rs copies curated/bundled -> src/_vendored/, and the
+// semantic equivalence of curated vs vendored is asserted separately by curated_equiv_vendored.rs
+// (DESIGN.md §2.3 guard). This test only enforces that the EMBEDDED snapshot matches whatever the
+// bundler produced — i.e. "you re-ran `npm run bundle` and committed the result".
 //
 // Skips (no-op) when the repo root is absent (`cargo publish` / `cargo package` verify mode, where
 // the extracted tarball has no `../..`) or when git / tracked files are unavailable — mirroring
@@ -16,25 +23,26 @@
 use std::path::PathBuf;
 
 // (git-relative root source, git-relative committed snapshot) — layout is stable, so hard-coded.
+// MUST stay in lock-step with build.rs's ASSETS table (same sources, same destinations).
 const ASSETS: &[(&str, &str)] = &[
     (
         "rules-manifest.json",
         "crates/validator/src/_vendored/manifest/rules-manifest.json",
     ),
     (
-        "schemas/vendored/dataset.json",
+        "schemas/curated/bundled/dataset.json",
         "crates/validator/src/_vendored/schemas/dataset.json",
     ),
     (
-        "schemas/vendored/collection.json",
+        "schemas/curated/bundled/collection.json",
         "crates/validator/src/_vendored/schemas/collection.json",
     ),
     (
-        "schemas/vendored/dimension.json",
+        "schemas/curated/bundled/dimension.json",
         "crates/validator/src/_vendored/schemas/dimension.json",
     ),
     (
-        "schemas/vendored/index.json",
+        "schemas/curated/bundled/index.json",
         "crates/validator/src/_vendored/schemas/index.json",
     ),
 ];
@@ -53,7 +61,7 @@ fn git_show_head(path: &str) -> Option<Vec<u8>> {
 }
 
 #[test]
-fn committed_vendored_snapshot_matches_root_sources() {
+fn committed_snapshot_matches_curated_bundled_sources() {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let repo_root = crate_dir.join("../..");
 
@@ -88,7 +96,9 @@ fn committed_vendored_snapshot_matches_root_sources() {
     assert!(
         diffs.is_empty(),
         "Committed `_vendored` snapshot has drifted from the repo-root sources ({}). build.rs \
-         silently re-syncs the WORKING TREE on every build, so this only surfaces here. Fix: run \
+         silently re-syncs the WORKING TREE on every build, so this only surfaces here. The schema \
+         source is `schemas/curated/bundled/` (the bundled curated set); if you edited \
+         `schemas/curated/*.json`, re-run `npm run bundle` to regenerate the bundled output, then \
          `cargo build` in crates/validator (build.rs copies root -> src/_vendored), then COMMIT the \
          updated snapshot so the publishable tarball and the repo agree:\n{}",
         diffs.len(),

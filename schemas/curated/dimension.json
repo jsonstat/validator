@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "JSON-stat 2.0 Curated Dimension Schema",
+	"$id": "https://json-stat.org/curated/2.0/dimension.json",
+	"description": "Curated de-duplicated dimension schema. All shared definitions live in core.json and are inlined by tools/bundle-schemas.mjs at build time. Semantically equivalent to the vendored schemas/vendored/dimension.json (enforced by the curated-equiv-vendored parity test).",
+
+	"type": "object",
+	"properties": { "$ref": "core.json#/$defs/dimensionProperties" },
+	"additionalProperties": false,
+	"required": [ "version", "class", "category" ]
+}

@@ -1,5 +1,13 @@
-// Build script: keeps src/_vendored/ in sync with the monorepo-root single sources of truth
-// (../../rules-manifest.json and ../../schemas/vendored/*.json) during LOCAL development.
+// Build script: keeps src/_vendored/ in sync with the monorepo-root single sources of truth during
+// LOCAL development: the manifest (../../rules-manifest.json) and the BUNDLED CURATED schemas
+// (../../schemas/curated/bundled/*.json — the self-contained output of tools/bundle-schemas.mjs,
+// which inlines the de-duplicated schemas/curated/*.json that $ref into core.json).
+//
+// Why the curated/bundled set (not schemas/vendored/): the vendored originals are the verbatim
+// upstream quote source; the curated set is the de-duplicated, bundled equivalent the validator
+// actually loads at runtime (as of 1.0.0). A CI curated-equiv-vendored parity test asserts the two
+// are semantically identical. The curated set also fixes the `\-` RegExp escape the vendored
+// `updated` pattern carries, so the structural pass compiles cleanly with no silent-skip fallback.
 //
 // Why this exists: the crate embeds those shared files via include_str!("src/_vendored/...").
 // We can't include_str! from ../../ directly because `cargo publish`/`cargo package` only pack
@@ -8,13 +16,14 @@
 //
 // Two operating modes:
 //  - LOCAL dev: the repo root IS reachable (../../rules-manifest.json exists). build.rs copies the
-//    5 shared files into src/_vendored/ so edits at the root are picked up automatically.
+//    shared files into src/_vendored/ so edits at the root (+ a re-bundle) are picked up.
 //  - PACKAGE/VERIFY (cargo publish, cargo package): the extracted tarball has no repo root. build.rs
 //    detects the missing source and becomes a no-op — src/_vendored/ is committed and already packed,
 //    so include_str! resolves directly. This is what makes the published crate self-contained.
 //
-// The committed src/_vendored/ snapshot is kept byte-identical to the root sources (build.rs would
-// rewrite it without producing a git diff), and a CI parity test can assert that.
+// The committed src/_vendored/ snapshot is kept byte-identical to the root bundled sources
+// (build.rs would rewrite it without producing a git diff), and vendored_parity.rs asserts that
+// in CI.
 use std::fs;
 use std::path::Path;
 
@@ -24,13 +33,19 @@ const REPO_ROOT_REL: &str = "../..";
 const ASSETS: &[(&str, &str)] = &[
     // (source relative to repo root, destination relative to crate src/_vendored/)
     ("rules-manifest.json", "manifest/rules-manifest.json"),
-    ("schemas/vendored/dataset.json", "schemas/dataset.json"),
     (
-        "schemas/vendored/collection.json",
+        "schemas/curated/bundled/dataset.json",
+        "schemas/dataset.json",
+    ),
+    (
+        "schemas/curated/bundled/collection.json",
         "schemas/collection.json",
     ),
-    ("schemas/vendored/dimension.json", "schemas/dimension.json"),
-    ("schemas/vendored/index.json", "schemas/index.json"),
+    (
+        "schemas/curated/bundled/dimension.json",
+        "schemas/dimension.json",
+    ),
+    ("schemas/curated/bundled/index.json", "schemas/index.json"),
 ];
 
 fn main() {
@@ -54,13 +69,19 @@ fn main() {
         return;
     }
 
-    // LOCAL dev mode: repo root reachable → sync from the single sources of truth.
+    // LOCAL dev mode: repo root reachable → sync from the single sources of truth. The schema
+    // source is the BUNDLED curated set (schemas/curated/bundled/, produced by `npm run bundle`
+    // from schemas/curated/*.json + core.json). Watch both: editing the authored source OR
+    // re-running the bundler should trigger a re-sync into src/_vendored/.
     println!("cargo:rerun-if-changed={}", source_marker.display());
-    for entry in fs::read_dir(repo_root.join("schemas").join("vendored"))
-        .expect("build.rs: could not read schemas/vendored")
-    {
-        let entry = entry.expect("dir entry");
-        println!("cargo:rerun-if-changed={}", entry.path().display());
+    for sub in ["bundled", ""] {
+        let dir = repo_root.join("schemas").join("curated").join(sub);
+        for entry in fs::read_dir(&dir)
+            .unwrap_or_else(|_| panic!("build.rs: could not read {}", dir.display()))
+        {
+            let entry = entry.expect("dir entry");
+            println!("cargo:rerun-if-changed={}", entry.path().display());
+        }
     }
 
     for (src_rel, dst_rel) in ASSETS {

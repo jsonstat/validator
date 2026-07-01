@@ -27,17 +27,14 @@ fn pick_schema_str(doc: &Value) -> &'static str {
 }
 
 pub fn validate_structural(doc: &Value, mf: &ManifestData) -> Vec<Finding> {
-    let schema: Value = match serde_json::from_str(pick_schema_str(doc)) {
-        Ok(s) => s,
-        Err(_) => return Vec::new(),
-    };
-    // The vendored schemas use `\-` (escaped hyphen) in the `updated` date pattern. If the regex
-    // engine rejects that escape, compilation fails; we then skip the structural pass (semantic
-    // checks still run). This is the gap the design's "curated de-duplicated schemas" addresses.
-    let validator = match validator_for(&schema) {
-        Ok(v) => v,
-        Err(_) => return Vec::new(),
-    };
+    let schema: Value = serde_json::from_str(pick_schema_str(doc))
+        .expect("embedded curated schema must be valid JSON");
+    // As of 1.0.0 the structural pass loads the curated/bundled schemas, which write the `updated`
+    // date hyphen literally and compile cleanly (the vendored upstream originals' invalid `\-`
+    // escape that previously forced a silent-skip here is gone). A compile failure now indicates a
+    // real schema regression, so propagate it as a panic rather than silently no-op-ing.
+    let validator = validator_for(&schema)
+        .expect("embedded curated schema must compile under the jsonschema engine");
     let r = lookup(mf, "STRUCT");
     // Bind to a local so the validate() temporary (which borrows `validator`) is dropped before
     // `validator` itself, satisfying the borrow checker.
